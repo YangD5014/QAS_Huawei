@@ -34,4 +34,4 @@ Intership of Quantum Architecture Search(QAS)
 这里也是重点创新之处: 原文使用越少编码方案的组合，就要求 ansatz深度大增才能保持高准确度。 如果本课题使用 8 比特的编码方案 准确度接近 但 ansatz 深度大大降低 也是重要创新点。
 
 ### 3.2. DQAS方法
-完全基于 TensorCircuit 框架 由于其整合了加速库 jax 等,自行实现不现实。
+完全基于 TensorCircuit 框架，可以使用腾讯框架来实现。
