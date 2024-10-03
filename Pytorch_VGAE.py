@@ -84,58 +84,58 @@ class CustomGraphDataset(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
-# 数据集实例化
-root = './VGAE_dataset'
-dataset = CustomGraphDataset(root=root)
+# # 数据集实例化
+# root = './VGAE_dataset'
+# dataset = CustomGraphDataset(root=root)
 
-# 超参数
-num_epochs = 200
-learning_rate = 0.01
-batch_size = 32
-out_channels = 16  # 嵌入维度
+# # 超参数
+# num_epochs = 200
+# learning_rate = 0.01
+# batch_size = 32
+# out_channels = 16  # 嵌入维度
 
-# 创建 DataLoader
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+# # 创建 DataLoader
+# train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-# 实例化模型和优化器
-model = VGAEModel(in_channels=dataset[0].x.size(1), out_channels=out_channels)
-optimizer = Adam(model.parameters(), lr=learning_rate)
+# # 实例化模型和优化器
+# model = VGAEModel(in_channels=dataset[0].x.size(1), out_channels=out_channels)
+# optimizer = Adam(model.parameters(), lr=learning_rate)
 
-# 训练循环
-for epoch in range(num_epochs):
-    start_time = time.time()  # 记录开始时间
-    model.train()
-    total_loss = 0
+# # 训练循环
+# for epoch in range(num_epochs):
+#     start_time = time.time()  # 记录开始时间
+#     model.train()
+#     total_loss = 0
 
-    for batch_idx, data in enumerate(train_loader):
-        optimizer.zero_grad()
+#     for batch_idx, data in enumerate(train_loader):
+#         optimizer.zero_grad()
         
-        # 从图数据中获取节点特征和边索引
-        x, edge_index = data.x, data.edge_index
+#         # 从图数据中获取节点特征和边索引
+#         x, edge_index = data.x, data.edge_index
         
-        # 前向传播
-        z = model.encode(x, edge_index)
+#         # 前向传播
+#         z = model.encode(x, edge_index)
         
-        # 重建损失
-        loss = model.recon_loss(z, edge_index)
-        kl_divergence = model.kl_loss()
-        total_loss = loss + kl_divergence
+#         # 重建损失
+#         loss = model.recon_loss(z, edge_index)
+#         kl_divergence = model.kl_loss()
+#         total_loss = loss + kl_divergence
         
-        # 反向传播
-        total_loss.backward()
-        optimizer.step()
+#         # 反向传播
+#         total_loss.backward()
+#         optimizer.step()
 
-        # 打印每个批次的损失
-        #print(f'  Batch {batch_idx + 1}/{len(train_loader)}, Loss: {total_loss.item():.4f}')
+#         # 打印每个批次的损失
+#         #print(f'  Batch {batch_idx + 1}/{len(train_loader)}, Loss: {total_loss.item():.4f}')
 
-        total_loss += total_loss.item()
+#         total_loss += total_loss.item()
 
-    avg_loss = total_loss / len(train_loader)
-    elapsed_time = time.time() - start_time  # 计算经过时间
-    print(f'Epoch {epoch + 1}/{num_epochs}, Average Loss: {avg_loss:.4f}, Time: {elapsed_time:.2f}s')
+#     avg_loss = total_loss / len(train_loader)
+#     elapsed_time = time.time() - start_time  # 计算经过时间
+#     print(f'Epoch {epoch + 1}/{num_epochs}, Average Loss: {avg_loss:.4f}, Time: {elapsed_time:.2f}s')
 
-# 保存训练后的模型
-torch.save(model.state_dict(), 'vgae_model.pth')
+# # 保存训练后的模型
+# torch.save(model.state_dict(), 'vgae_model.pth')
 
-# 确认使用了所有的数据
-print(f'Total training samples used: {len(dataset)}')
+# # 确认使用了所有的数据
+# print(f'Total training samples used: {len(dataset)}')
