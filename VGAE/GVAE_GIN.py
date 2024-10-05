@@ -13,16 +13,18 @@ class GINEncoder(nn.Module):
         self.mlp_shared = nn.Sequential(
             nn.Linear(in_channels, hidden_channels),
             nn.ReLU(),
+            nn.Linear(hidden_channels, hidden_channels),
+            nn.ReLU(),
             nn.Linear(hidden_channels, hidden_channels)
         )
         self.mlp_mu = nn.Sequential(
             nn.Linear(hidden_channels, out_channels),
-            nn.ReLU(),
+            #nn.ReLU(),
             nn.Linear(out_channels, out_channels)
         )
         self.mlp_logvar = nn.Sequential(
             nn.Linear(hidden_channels, out_channels),
-            nn.ReLU(),
+            #nn.ReLU(),
             nn.Linear(out_channels, out_channels)
         )
 
@@ -49,20 +51,6 @@ class DeepVGAE(VGAE):
         adj_pred = self.decoder.forward_all(z)
         return adj_pred
 
-    # def loss(self, x, pos_edge_index, all_edge_index):
-    #     z = self.encode(x, pos_edge_index)
-    #     pos_loss = -torch.log(
-    #         self.decoder(z, pos_edge_index, sigmoid=True) + 1e-15).mean()
-    #     # Do not include self-loops in negative samples
-    #     all_edge_index_tmp, _ = remove_self_loops(all_edge_index)
-    #     all_edge_index_tmp, _ = add_self_loops(all_edge_index_tmp)
-
-    #     neg_edge_index = negative_sampling(all_edge_index_tmp, z.size(0), pos_edge_index.size(1))
-    #     neg_loss = -torch.log(1 - self.decoder(z, neg_edge_index, sigmoid=True) + 1e-15).mean()
-
-    #     kl_loss = 1 / x.size(0) * self.kl_loss()
-
-    #     return pos_loss + neg_loss + kl_loss
     
     def loss(self, x, pos_edge_index):
         z = self.encode(x, pos_edge_index)
@@ -80,7 +68,7 @@ class DeepVGAE(VGAE):
         # 计算KL散度损失
         kl_loss = 1 / x.size(0) * self.kl_loss()
 
-        return pos_loss + neg_loss + kl_loss
+        return pos_loss + neg_loss + 0.01*kl_loss
 
 
     def single_test(self, x, train_pos_edge_index, test_pos_edge_index, test_neg_edge_index):
