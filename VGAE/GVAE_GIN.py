@@ -12,19 +12,21 @@ class GINEncoder(nn.Module):
         # GINConv requires an MLP for its message passing mechanism
         self.mlp_shared = nn.Sequential(
             nn.Linear(in_channels, hidden_channels),
-            nn.ReLU(),
+            nn.LeakyReLU(0.1),
             nn.Linear(hidden_channels, hidden_channels),
-            nn.ReLU(),
+            nn.LeakyReLU(0.1),
+            nn.Linear(hidden_channels, hidden_channels),
+            nn.LeakyReLU(0.1),  # 增加额外的层
             nn.Linear(hidden_channels, hidden_channels)
         )
         self.mlp_mu = nn.Sequential(
             nn.Linear(hidden_channels, out_channels),
-            #nn.ReLU(),
+            nn.ReLU(),
             nn.Linear(out_channels, out_channels)
         )
         self.mlp_logvar = nn.Sequential(
             nn.Linear(hidden_channels, out_channels),
-            #nn.ReLU(),
+            nn.ReLU(),
             nn.Linear(out_channels, out_channels)
         )
 
@@ -48,7 +50,7 @@ class DeepVGAE(VGAE):
 
     def forward(self, x, edge_index):
         z = self.encode(x, edge_index)
-        adj_pred = self.decoder.forward_all(z)
+        adj_pred = torch.sigmoid(self.decoder.forward_all(z))  # 使用 sigmoid
         return adj_pred
 
     
@@ -58,17 +60,14 @@ class DeepVGAE(VGAE):
         # 计算正边的损失
         pos_loss = -torch.log(
             self.decoder(z, pos_edge_index, sigmoid=True) + 1e-15).mean()
-        
         # 直接进行负样本采样
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
-        
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1) * 3)
         # 计算负边的损失
         neg_loss = -torch.log(1 - self.decoder(z, neg_edge_index, sigmoid=True) + 1e-15).mean()
-        
         # 计算KL散度损失
         kl_loss = 1 / x.size(0) * self.kl_loss()
 
-        return pos_loss + neg_loss + 0.01*kl_loss
+        return pos_loss + neg_loss 
 
 
     def single_test(self, x, train_pos_edge_index, test_pos_edge_index, test_neg_edge_index):

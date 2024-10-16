@@ -9,6 +9,7 @@ import pandas as pd
 from torch_geometric.utils import train_test_split_edges
 from torch_geometric.data import Data, DataLoader
 from GVAE_GIN import DeepVGAE
+import json
 
 # 将邻接矩阵转换为 PyTorch Geometric 支持的 edge_index 格式
 def adj_to_edge_index(adj):
@@ -55,7 +56,7 @@ def test(model, data):
     return roc_auc, ap
 
 # 训练主函数
-def run_training(X_list, A_list, epochs=200, batch_size:int=1, lr=0.001):
+def run_training(X_list, A_list, epochs=150, batch_size:int=25, lr=0.001):
     # 准备数据
     data_list = prepare_data(X=X_list, A=A_list)
     loader = DataLoader(data_list, batch_size=batch_size, shuffle=True)
@@ -65,7 +66,7 @@ def run_training(X_list, A_list, epochs=200, batch_size:int=1, lr=0.001):
     # 动态创建模型（根据第一条数据的特征维度动态设置输入通道数）
     in_channels = 22
     hidden_channels = 32
-    out_channels = 12
+    out_channels = 8
 
     # 实例化更新后的 DeepVGAE
     model = DeepVGAE(in_channels=in_channels, 
@@ -75,6 +76,10 @@ def run_training(X_list, A_list, epochs=200, batch_size:int=1, lr=0.001):
     optimizer = Adam(model.parameters(), lr=lr)
     print('初始化完成 开始训练啦!')
 
+
+    save_ruc =  []
+    save_ap=    []
+    save_loss = []
     # 训练和评估
     for epoch in range(epochs):
         total_loss = 0
@@ -101,6 +106,22 @@ def run_training(X_list, A_list, epochs=200, batch_size:int=1, lr=0.001):
 
         if (epoch + 1) % 5 == 0:
             print(f'Epoch {epoch+1}, Avg ROC AUC: {sum(roc_auc_scores)/len(roc_auc_scores):.4f}, Avg AP: {sum(ap_scores)/len(ap_scores):.4f}')
+        
+        save_ruc.append(sum(roc_auc_scores)/len(roc_auc_scores))
+        save_ap.append(sum(ap_scores)/len(ap_scores))
+        save_loss.append(total_loss / len(loader))
+        outcome_dict={'AP':save_ap, 'ROC':save_ruc, 'Loss':save_loss} 
+        with open('./result_1015.json', 'w') as f:
+            json.dump(outcome_dict, f)
+
+
+def save_model(model):
+    torch.save(model.state_dict(), './Model_1015.pt')
+    
+    
+
+
+
 
 
 # 加载数据（5000 对 (X, A)）

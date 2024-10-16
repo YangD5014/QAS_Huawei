@@ -29,7 +29,7 @@ def amplitude_param(pixels):
     param_rd = np.array(param_rd)
     return param_rd
 
-def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST):
+def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST,PCA_dim:int=10):
     '''
     将 28*28 的 MNIST 手写数字图像 基于PCA进行压缩
     
@@ -51,7 +51,7 @@ def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST):
     n_samples = X_sampled.shape[0]
     X_flattened = X_sampled.view(n_samples, -1)  # 将图像展平为一维向量
     X_flattened = X_flattened/255
-    pca = PCA(n_components=10)
+    pca = PCA(n_components=PCA_dim)
     X_pca = pca.fit_transform(X_flattened)
     
     X_train, X_test, y_train, y_test = train_test_split(X_pca, y_sampled, test_size=0.2, random_state=0, shuffle=True) # 将数据集划分为训练集和测试集

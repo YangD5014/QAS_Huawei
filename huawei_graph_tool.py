@@ -130,10 +130,10 @@ def my_random_circuit(n_qubits, gate_num, sd_rate=0.5, ctrl_rate=0.2, seed=None)
                 gate = np.random.choice(single['param'])
                 #param = np.random.uniform(-np.pi * 2, np.pi * 2)
                 param = pg.new()
-                circuit += gate(param).on(q1, q2)
+                circuit += gate(param).on(q1)
             else:
                 gate = np.random.choice(single['non_param'])
-                circuit += gate.on(q1, q2)
+                circuit += gate.on(q1)
         else:
             if np.random.random() < 0.75:
                 gate = np.random.choice(double['param'])
@@ -212,3 +212,69 @@ class CustomGraphDataset(InMemoryDataset):
         # 将所有图对象保存到单个文件中
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
+        
+        
+        
+def decoding_circuit(X:np.array):
+    Gate_Categary = ['START','X','Y','H','Z','RX','RY','RZ','Rxx','Ryy','Rzz','SWAP','CNOT','END']
+    cir = Circuit()
+    row,col = X.shape
+    pg = PRGenerator(name='ansatz')
+    for i in range(row):
+        row = X[i]
+        node_index=row[:-8]
+        qbits_index=row[-8:]
+        if all(x == 0 for x in node_index):
+            continue
+        print(node_index)
+        gate_str = Gate_Categary[np.where(node_index == 1)[0][0]]
+        qbits = np.where(qbits_index == 1)[0]
+        qbits = [int(qbit) for qbit in qbits]  # 将 numpy.int64 转换为 Python int
+        print(gate_str,qbits)
+        print(f'Gate ={gate_str}')
+
+        if gate_str == 'START' or gate_str == 'END':
+            continue
+        if gate_str == 'X':
+            if len(qbits)==1:
+                cir +=gates.X.on(qbits[0])
+            else:
+                cir +=gates.X.on(qbits[0],qbits[1])
+        if gate_str == 'Y':
+            if len(qbits)==1:
+                cir +=gates.Y.on(qbits[0])
+            else:
+                cir +=gates.Y.on(qbits[0],qbits[1])
+                
+        if gate_str == 'Z':
+            if len(qbits)==1:
+                cir +=gates.Z.on(qbits[0])
+            else:
+                cir +=gates.Z.on(qbits[0],qbits[1])
+        
+        if gate_str == 'H':
+            if len(qbits)==1:
+                cir +=gates.H.on(qbits[0])
+            else:
+                cir +=gates.H.on(qbits[0],qbits[1])
+                
+        if gate_str == 'RX':
+            print('检测到 RX!')
+            cir +=RX(pg.new()).on(qbits[0])
+        if gate_str == 'RY':
+            cir +=RY(pg.new()).on(qbits[0])
+        if gate_str == 'RZ':
+            cir +=RZ(pg.new()).on(qbits[0])
+        if gate_str == 'CNOT':
+            cir +=CNOT.on(qbits[0],qbits[1])
+        if gate_str == 'SWAP':
+            print(qbits[0],qbits[1])
+            cir +=gates.SWAP.on(qbits)
+        if gate_str == 'Rxx':
+            cir +=gates.Rxx(pg.new()).on(qbits)
+        if gate_str == 'Ryy':
+            cir +=gates.Ryy(pg.new()).on(qbits)
+        if gate_str == 'Rzz':
+            cir +=gates.Rzz(pg.new()).on(qbits)
+            
+    return cir
