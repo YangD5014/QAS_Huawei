@@ -7,6 +7,9 @@ from mindquantum.algorithm.library import amplitude_encoder
 from mindquantum.algorithm.nisq import IQPEncoding
 
 
+
+
+
 def sample_data(X, y, label, sample_ratio=0.2):
     label_mask = (y == label)
     X_label = X[label_mask]
@@ -59,9 +62,14 @@ def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST,PCA_dim:int=10):
     y_train[y_train==6]=0
     y_test[y_test==3]=1
     y_test[y_test==6]=0
+    y_train = y_train.numpy()
+    y_test = y_test.numpy()
+    
     
     return X_train, X_test, y_train, y_test
     
+mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=None)
+X_train, X_test, y_train, y_test = PCA_data_preprocessing(mnist_dataset,8)
     
     
 def amplitude_encoding(X_train:np.array,X_test:np.array):
