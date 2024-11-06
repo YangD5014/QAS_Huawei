@@ -1,0 +1,862 @@
+# ===============================================================================================
+# The following shows the last analyze fail log message.
+# ===============================================================================================
+
+----------------------------------------------------
+- Caught exception:
+----------------------------------------------------
+The types of arguments in Map must be consistent, but the types of arguments are inconsistent.
+There are 7 inputs of `map`, corresponding type info:
+In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901
+                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,
+                                      ^
+.
+The type of the second argument in Map is: List[Tensor[Float32]].
+The type of the third argument in Map is: Tuple[Ref[Tensor[Float32]]].
+The type of the 4th argument in Map is: Tuple[Ref[Tensor[Float32]]].
+The type of the 5th argument in Map is: Tuple[Ref[Tensor[Float32]]].
+The type of the 6th argument in Map is: Tuple[Bool].
+The type of the 7th argument in Map is: Tuple[Bool].
+
+----------------------------------------------------
+- C++ Call Stack: (For framework developers)
+----------------------------------------------------
+mindspore/ccsrc/frontend/operator/composite/map.cc:265 Make
+
+----------------------------------------------------
+- The Traceback of Net Construct Code:
+----------------------------------------------------
+# 0 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:916
+        if not self.use_offload:
+# 1 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:917
+            gradients = self.gradients_centralization(gradients)
+            ^
+# 2 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:928
+        return self._apply_adam(params, beta1_power, beta2_power, moment1, moment2, lr, gradients)
+               ^
+# 3 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:817
+        if self.use_offload:
+# 4 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826
+            if self.use_dist_optimizer:
+# 5 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866
+                if self.is_group_lr:
+# 6 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887
+                    if self.use_lazy:
+# 7 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894
+                        if self.use_amsgrad:
+# 8 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901
+                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,
+                            ^
+# 9 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894
+                        if self.use_amsgrad:
+# 10 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887
+                    if self.use_lazy:
+# 11 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866
+                if self.is_group_lr:
+# 12 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826
+            if self.use_dist_optimizer:
+# 13 In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901
+                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,
+                                      ^
+
+# ===============================================================================================
+# The following shows the IR when the function graphs evaluation fails to help locate the problem.
+# You can search the last ------------------------> to the node which is evaluated failure.
+# Refer to https://www.mindspore.cn/search?inputValue=analyze_fail.ir to get more instructions.
+# ===============================================================================================
+
+# IR entry: @mindspore_nn_optim_adam_Adam_construct_4924
+# Total subgraphs: 35
+
+# Attrs:
+skip_auto_parallel_compile : 1
+
+# Total params: 8
+# Params:
+%para1_gradients : <null>
+%para2_structure_param : <Ref[Tensor[Float32]], (8), ref_key=:structure_param>  :  has_default
+%para3_moment1.structure_param : <Ref[Tensor[Float32]], (8), ref_key=:moment1.structure_param>  :  has_default
+%para4_moment2.structure_param : <Ref[Tensor[Float32]], (8), ref_key=:moment2.structure_param>  :  has_default
+%para5_beta1_power : <Ref[Tensor[Float32]], (), ref_key=:beta1_power>  :  has_default
+%para6_beta2_power : <Ref[Tensor[Float32]], (), ref_key=:beta2_power>  :  has_default
+%para7_global_step : <Ref[Tensor[Int32]], (1), ref_key=:global_step>  :  has_default
+%para8_learning_rate : <Ref[Tensor[Float32]], (), ref_key=:learning_rate>  :  has_default
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: mindspore_nn_optim_adam_Adam_construct_4924 : 0x12ec7c818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:910/    def construct(self, gradients):/
+subgraph @mindspore_nn_optim_adam_Adam_construct_4924(%para1_gradients, %para2_structure_param, %para3_moment1.structure_param, %para4_moment2.structure_param, %para5_beta1_power, %para6_beta2_power, %para7_global_step, %para8_learning_rate) {
+
+#------------------------> 0
+  %1(CNode_4940) = call @✓mindspore_nn_optim_adam_Adam_construct_4927()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:916/        if not self.use_offload:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:916/        if not self.use_offload:/
+}
+# Order:
+#   1: @mindspore_nn_optim_adam_Adam_construct_4924:gradients{[0]: ValueNode<FuncGraph> flatten_gradients_4941, [1]: param_gradients}
+#   2: @mindspore_nn_optim_adam_Adam_construct_4924:gradients{[0]: ValueNode<FuncGraph> decay_weight_4942, [1]: gradients}
+#   3: @mindspore_nn_optim_adam_Adam_construct_4924:CNode_4940{[0]: ValueNode<FuncGraph> ✓mindspore_nn_optim_adam_Adam_construct_4927}
+#   4: @mindspore_nn_optim_adam_Adam_construct_4924:CNode_4943{[0]: ValueNode<Primitive> Return, [1]: CNode_4940}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✓mindspore_nn_optim_adam_Adam_construct_4927 : 0x10a822e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:910/    def construct(self, gradients):/
+subgraph @✓mindspore_nn_optim_adam_Adam_construct_4927 parent: [subgraph @mindspore_nn_optim_adam_Adam_construct_4924]() {
+
+#------------------------> 1
+  %1(CNode_4944) = call @↓mindspore_nn_optim_adam_Adam_construct_4928()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:917/            gradients = self.gradients_centralization(gradients)/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:917/            gradients = self.gradients_centralization(gradients)/
+}
+# Order:
+#   1: @✓mindspore_nn_optim_adam_Adam_construct_4927:gradients{[0]: ValueNode<FuncGraph> gradients_centralization_4945, [1]: gradients}
+#   2: @✓mindspore_nn_optim_adam_Adam_construct_4927:CNode_4944{[0]: ValueNode<FuncGraph> ↓mindspore_nn_optim_adam_Adam_construct_4928}
+#   3: @✓mindspore_nn_optim_adam_Adam_construct_4927:CNode_4946{[0]: ValueNode<Primitive> Return, [1]: CNode_4944}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓mindspore_nn_optim_adam_Adam_construct_4928 : 0x10a827e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:910/    def construct(self, gradients):/
+subgraph @↓mindspore_nn_optim_adam_Adam_construct_4928 parent: [subgraph @✓mindspore_nn_optim_adam_Adam_construct_4927]() {
+  %1(CNode_4947) = S_Prim_AssignAdd[output_names: ["ref"], side_effect_mem: Bool(1), input_names: ["ref", "value"]](%para7_global_step, Tensor(shape=[1], dtype=Int32, value=[1]))
+      : (<Ref[Tensor[Int32]], (1)>, <Tensor[Int32], (1)>) -> (<Tensor[Int32], (1)>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:921/        self.assignadd(self.global_step, self.global_step_increase_tensor)/
+  %2(beta1_power) = S_Prim_mul(%para5_beta1_power, Tensor(shape=[], dtype=Float32, value=0.9))
+      : (<Ref[Tensor[Float32]], ()>, <Tensor[Float32], ()>) -> (<Tensor[Float32], ()>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:923/        beta1_power = self.beta1_power * self.beta1/
+  %3(CNode_4949) = call @assign_4948(%para5_beta1_power, %2)
+      : (<Ref[Tensor[Float32]], ()>, <Tensor[Float32], ()>) -> (<Tensor[Float32], ()>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:924/        self.beta1_power = beta1_power/
+  %4(beta2_power) = S_Prim_mul(%para6_beta2_power, Tensor(shape=[], dtype=Float32, value=0.999))
+      : (<Ref[Tensor[Float32]], ()>, <Tensor[Float32], ()>) -> (<Tensor[Float32], ()>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:925/        beta2_power = self.beta2_power * self.beta2/
+  %5(CNode_4950) = call @assign_4948(%para6_beta2_power, %4)
+      : (<Ref[Tensor[Float32]], ()>, <Tensor[Float32], ()>) -> (<Tensor[Float32], ()>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:926/        self.beta2_power = beta2_power/
+  %6(CNode_4951) = MakeTuple(%1, %3, %5)
+      : (<Tensor[Int32], (1)>, <Tensor[Float32], ()>, <Tensor[Float32], ()>) -> (<Tuple[Tensor[Int32],Tensor[Float32]*2], TupleShape((1), (), ())>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:909/    @jit/
+  %7(CNode_4952) = StopGradient(%6)
+      : (<Tuple[Tensor[Int32],Tensor[Float32]*2], TupleShape((1), (), ())>) -> (<Tuple[Tensor[Int32],Tensor[Float32]*2], TupleShape((1), (), ())>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:909/    @jit/
+  %8(CNode_4953) = $(mindspore_nn_optim_adam_Adam_construct_4924):MakeTuple(%para2_structure_param)
+      : (<Ref[Tensor[Float32]], (8)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((8))>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:911/        params = self._parameters/
+  %9(CNode_4954) = $(mindspore_nn_optim_adam_Adam_construct_4924):MakeTuple(%para3_moment1.structure_param)
+      : (<Ref[Tensor[Float32]], (8)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((8))>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:912/        moment1 = self.moment1/
+  %10(CNode_4955) = $(mindspore_nn_optim_adam_Adam_construct_4924):MakeTuple(%para4_moment2.structure_param)
+      : (<Ref[Tensor[Float32]], (8)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((8))>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:913/        moment2 = self.moment2/
+  %11(lr) = call @get_lr_4956()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:920/        lr = self.get_lr()/
+  %12(gradients) = $(mindspore_nn_optim_adam_Adam_construct_4924):call @flatten_gradients_4941(%para1_gradients)
+      : (<List[Tensor[Float32]], ListShape[(8)]>) -> (<List[Tensor[Float32]], ListShape[(8)]>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:914/        gradients = self.flatten_gradients(gradients)/
+  %13(gradients) = $(mindspore_nn_optim_adam_Adam_construct_4924):call @decay_weight_4942(%12)
+      : (<List[Tensor[Float32]], ListShape[(8)]>) -> (<List[Tensor[Float32]], ListShape[(8)]>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:915/        gradients = self.decay_weight(gradients)/
+  %14(gradients) = $(✓mindspore_nn_optim_adam_Adam_construct_4927):call @gradients_centralization_4945(%13)
+      : (<List[Tensor[Float32]], ListShape[(8)]>) -> (<List[Tensor[Float32]], ListShape[(8)]>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:917/            gradients = self.gradients_centralization(gradients)/
+  %15(gradients) = call @scale_grad_4957(%14)
+      : (<List[Tensor[Float32]], ListShape[(8)]>) -> (<List[Tensor[Float32]], ListShape[(8)]>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:918/        gradients = self.scale_grad(gradients)/
+  %16(gradients) = call @_grad_sparse_indices_deduplicate_4958(%15)
+      : (<List[Tensor[Float32]], ListShape[(8)]>) -> (<List[Tensor[Float32]], ListShape[(8)]>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:919/        gradients = self._grad_sparse_indices_deduplicate(gradients)/
+
+#------------------------> 2
+  %17(CNode_4959) = call @_apply_adam_4929(%8, %2, %4, %9, %10, %11, %16)
+      : (<Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Tensor[Float32], ()>, <Tensor[Float32], ()>, <Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Ref[Tensor[Float32]], ()>, <List[Tensor[Float32]], ListShape[(8)]>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:928/        return self._apply_adam(params, beta1_power, beta2_power, moment1, moment2, lr, gradients)/
+  %18(CNode_4960) = Depend[side_effect_propagate: I64(1)](%17, %7)
+      : (<null>, <Tuple[Tensor[Int32],Tensor[Float32]*2], TupleShape((1), (), ())>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:928/        return self._apply_adam(params, beta1_power, beta2_power, moment1, moment2, lr, gradients)/
+  Return(%18)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:928/        return self._apply_adam(params, beta1_power, beta2_power, moment1, moment2, lr, gradients)/
+}
+# Order:
+#   1: @↓mindspore_nn_optim_adam_Adam_construct_4928:gradients{[0]: ValueNode<FuncGraph> scale_grad_4957, [1]: gradients}
+#   2: @↓mindspore_nn_optim_adam_Adam_construct_4928:gradients{[0]: ValueNode<FuncGraph> _grad_sparse_indices_deduplicate_4958, [1]: gradients}
+#   3: @↓mindspore_nn_optim_adam_Adam_construct_4928:lr{[0]: ValueNode<FuncGraph> get_lr_4956}
+#   4: @↓mindspore_nn_optim_adam_Adam_construct_4928:CNode_4947{[0]: ValueNode<DoSignaturePrimitive> S_Prim_AssignAdd, [1]: param_global_step, [2]: ValueNode<Tensor> Tensor(shape=[1], dtype=Int32, value=[1])}
+#   5: @↓mindspore_nn_optim_adam_Adam_construct_4928:beta1_power{[0]: ValueNode<DoSignaturePrimitive> S_Prim_mul, [1]: param_beta1_power, [2]: ValueNode<Tensor> Tensor(shape=[], dtype=Float32, value=0.9)}
+#   6: @↓mindspore_nn_optim_adam_Adam_construct_4928:CNode_4949{[0]: ValueNode<FuncGraph> assign_4948, [1]: param_beta1_power, [2]: beta1_power}
+#   7: @↓mindspore_nn_optim_adam_Adam_construct_4928:beta2_power{[0]: ValueNode<DoSignaturePrimitive> S_Prim_mul, [1]: param_beta2_power, [2]: ValueNode<Tensor> Tensor(shape=[], dtype=Float32, value=0.999)}
+#   8: @↓mindspore_nn_optim_adam_Adam_construct_4928:CNode_4950{[0]: ValueNode<FuncGraph> assign_4948, [1]: param_beta2_power, [2]: beta2_power}
+#   9: @↓mindspore_nn_optim_adam_Adam_construct_4928:CNode_4959{[0]: ValueNode<FuncGraph> _apply_adam_4929, [1]: CNode_4953, [2]: beta1_power, [3]: beta2_power, [4]: CNode_4954, [5]: CNode_4955, [6]: lr, [7]: gradients}
+#  10: @↓mindspore_nn_optim_adam_Adam_construct_4928:CNode_4961{[0]: ValueNode<Primitive> Return, [1]: CNode_4960}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: _apply_adam_4929 : 0x30e221a18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @_apply_adam_4929(%para9_params, %para10_beta1_power, %para11_beta2_power, %para12_moment1, %para13_moment2, %para14_lr, %para15_gradients) {
+
+#------------------------> 3
+  %1(CNode_4962) = call @✗_apply_adam_4930()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:817/        if self.use_offload:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:817/        if self.use_offload:/
+}
+# Order:
+#   1: @_apply_adam_4929:CNode_4962{[0]: ValueNode<FuncGraph> ✗_apply_adam_4930}
+#   2: @_apply_adam_4929:CNode_4963{[0]: ValueNode<Primitive> Return, [1]: CNode_4962}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗_apply_adam_4930 : 0x30e227818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @✗_apply_adam_4930 parent: [subgraph @_apply_adam_4929]() {
+
+#------------------------> 4
+  %1(CNode_4964) = call @2✗_apply_adam_4931()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826/            if self.use_dist_optimizer:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826/            if self.use_dist_optimizer:/
+}
+# Order:
+#   1: @✗_apply_adam_4930:CNode_4964{[0]: ValueNode<FuncGraph> 2✗_apply_adam_4931}
+#   2: @✗_apply_adam_4930:CNode_4965{[0]: ValueNode<Primitive> Return, [1]: CNode_4964}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: 2✗_apply_adam_4931 : 0x30e223818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @2✗_apply_adam_4931 parent: [subgraph @_apply_adam_4929]() {
+
+#------------------------> 5
+  %1(CNode_4966) = call @3✗_apply_adam_4932()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866/                if self.is_group_lr:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866/                if self.is_group_lr:/
+}
+# Order:
+#   1: @2✗_apply_adam_4931:CNode_4966{[0]: ValueNode<FuncGraph> 3✗_apply_adam_4932}
+#   2: @2✗_apply_adam_4931:CNode_4967{[0]: ValueNode<Primitive> Return, [1]: CNode_4966}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: 3✗_apply_adam_4932 : 0x30e22d018
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @3✗_apply_adam_4932 parent: [subgraph @_apply_adam_4929]() {
+
+#------------------------> 6
+  %1(CNode_4968) = call @4✗_apply_adam_4933()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887/                    if self.use_lazy:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887/                    if self.use_lazy:/
+}
+# Order:
+#   1: @3✗_apply_adam_4932:CNode_4968{[0]: ValueNode<FuncGraph> 4✗_apply_adam_4933}
+#   2: @3✗_apply_adam_4932:CNode_4969{[0]: ValueNode<Primitive> Return, [1]: CNode_4968}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: 4✗_apply_adam_4933 : 0x30e224c18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @4✗_apply_adam_4933 parent: [subgraph @_apply_adam_4929]() {
+
+#------------------------> 7
+  %1(CNode_4970) = call @5✗_apply_adam_4934()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894/                        if self.use_amsgrad:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894/                        if self.use_amsgrad:/
+}
+# Order:
+#   1: @4✗_apply_adam_4933:CNode_4970{[0]: ValueNode<FuncGraph> 5✗_apply_adam_4934}
+#   2: @4✗_apply_adam_4933:CNode_4971{[0]: ValueNode<Primitive> Return, [1]: CNode_4970}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: 5✗_apply_adam_4934 : 0x30e229e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @5✗_apply_adam_4934 parent: [subgraph @_apply_adam_4929]() {
+
+#------------------------> 8
+  %1(CNode_4972) = call @↓4✗_apply_adam_4935()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901/                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901/                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,/
+}
+# Order:
+#   1: @5✗_apply_adam_4934:CNode_4973{[0]: ValueNode<DoSignaturePrimitive> S_Prim_Partial, [1]: ValueNode<DoSignaturePrimitive> S_Prim_adam_opt, [2]: ValueNode<DoSignaturePrimitive> S_Prim_Adam, [3]: ValueNode<DoSignaturePrimitive> S_Prim_FusedSparseAdam, [4]: ValueNode<DoSignaturePrimitive> S_Prim_Push, [5]: ValueNode<DoSignaturePrimitive> S_Prim_Pull, [6]: ValueNode<BoolImm> false, [7]: ValueNode<BoolImm> false, [8]: ValueNode<BoolImm> true, [9]: param_beta1_power, [10]: param_beta2_power, [11]: ValueNode<Tensor> Tensor(shape=[], dtype=Float32, value=0.9), [12]: ValueNode<Tensor> Tensor(shape=[], dtype=Float32, value=0.999), [13]: ValueNode<Tensor> Tensor(shape=[], dtype=Float32, value=1e-08), [14]: param_lr}
+#   2: @5✗_apply_adam_4934:success{[0]: ValueNode<DoSignaturePrimitive> S_Prim_map, [1]: CNode_4973, [2]: param_gradients, [3]: param_params, [4]: param_moment1, [5]: param_moment2, [6]: ValueNode<ValueTuple> (false), [7]: ValueNode<ValueTuple> (false)}
+#   3: @5✗_apply_adam_4934:CNode_4972{[0]: ValueNode<FuncGraph> ↓4✗_apply_adam_4935}
+#   4: @5✗_apply_adam_4934:CNode_4974{[0]: ValueNode<Primitive> Return, [1]: CNode_4972}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓4✗_apply_adam_4935 : 0x30e22a418
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @↓4✗_apply_adam_4935 parent: [subgraph @5✗_apply_adam_4934]() {
+
+#------------------------> 9
+  %1(CNode_4975) = call @↓3✗_apply_adam_4936()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894/                        if self.use_amsgrad:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:894/                        if self.use_amsgrad:/
+}
+# Order:
+#   1: @↓4✗_apply_adam_4935:CNode_4975{[0]: ValueNode<FuncGraph> ↓3✗_apply_adam_4936}
+#   2: @↓4✗_apply_adam_4935:CNode_4976{[0]: ValueNode<Primitive> Return, [1]: CNode_4975}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓3✗_apply_adam_4936 : 0x30e225218
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @↓3✗_apply_adam_4936 parent: [subgraph @5✗_apply_adam_4934]() {
+
+#------------------------> 10
+  %1(CNode_4977) = call @↓2✗_apply_adam_4937()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887/                    if self.use_lazy:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:887/                    if self.use_lazy:/
+}
+# Order:
+#   1: @↓3✗_apply_adam_4936:CNode_4977{[0]: ValueNode<FuncGraph> ↓2✗_apply_adam_4937}
+#   2: @↓3✗_apply_adam_4936:CNode_4978{[0]: ValueNode<Primitive> Return, [1]: CNode_4977}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓2✗_apply_adam_4937 : 0x30e22d618
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @↓2✗_apply_adam_4937 parent: [subgraph @5✗_apply_adam_4934]() {
+
+#------------------------> 11
+  %1(CNode_4979) = call @↓✗_apply_adam_4938()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866/                if self.is_group_lr:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:866/                if self.is_group_lr:/
+}
+# Order:
+#   1: @↓2✗_apply_adam_4937:CNode_4979{[0]: ValueNode<FuncGraph> ↓✗_apply_adam_4938}
+#   2: @↓2✗_apply_adam_4937:CNode_4980{[0]: ValueNode<Primitive> Return, [1]: CNode_4979}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓✗_apply_adam_4938 : 0x30e223e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @↓✗_apply_adam_4938 parent: [subgraph @5✗_apply_adam_4934]() {
+
+#------------------------> 12
+  %1(CNode_4981) = call @↓_apply_adam_4939()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826/            if self.use_dist_optimizer:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:826/            if self.use_dist_optimizer:/
+}
+# Order:
+#   1: @↓✗_apply_adam_4938:CNode_4981{[0]: ValueNode<FuncGraph> ↓_apply_adam_4939}
+#   2: @↓✗_apply_adam_4938:CNode_4982{[0]: ValueNode<Primitive> Return, [1]: CNode_4981}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓_apply_adam_4939 : 0x30e220a18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:815/    def _apply_adam(self, params, beta1_power, beta2_power, moment1, moment2, lr, gradients):/
+subgraph @↓_apply_adam_4939 parent: [subgraph @5✗_apply_adam_4934]() {
+  %1(CNode_4973) = $(5✗_apply_adam_4934):S_Prim_Partial[side_effect_propagate: I64(1)](S_Prim_adam_opt, S_Prim_Adam[side_effect_mem: Bool(1), use_nesterov: Bool(0), use_locking: Bool(0)], S_Prim_FusedSparseAdam[output_names: ["var", "m", "v"], side_effect_mem: Bool(1), use_nesterov: Bool(0), input_names: ["var", "m", "v", "beta1_power", "beta2_power", "lr", "beta1", "beta2", "epsilon", "grad", "indices"], use_locking: Bool(0), primitive_target: "CPU"], S_Prim_Push[optim_type: "Adam", input_names: ["optim_inputs", "optim_input_shapes"], only_shape_indices: [I64(0), I64(1), I64(2)], output_names: ["key"], use_nesterov: Bool(0), side_effect_hidden: Bool(1), primitive_target: "CPU"], S_Prim_Pull[output_names: ["output"], input_names: ["key", "weight"], primitive_target: "CPU"], Bool(0), Bool(0), Bool(1), %para10_beta1_power, %para11_beta2_power, Tensor(shape=[], dtype=Float32, value=0.9), Tensor(shape=[], dtype=Float32, value=0.999), Tensor(shape=[], dtype=Float32, value=1e-08), %para14_lr)
+      : (<Func, NoShape>, <Func, NoShape>, <Func, NoShape>, <Func, NoShape>, <Func, NoShape>, <Bool, NoShape>, <Bool, NoShape>, <Bool, NoShape>, <Tensor[Float32], ()>, <Tensor[Float32], ()>, <Tensor[Float32], ()>, <Tensor[Float32], ()>, <Tensor[Float32], ()>, <Ref[Tensor[Float32]], ()>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901/                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,/
+
+#------------------------> 13
+  %2(success) = $(5✗_apply_adam_4934):S_Prim_map(%1, %para15_gradients, %para9_params, %para12_moment1, %para13_moment2, (Bool(0)), (Bool(0)))
+      : (<Func, NoShape>, <List[Tensor[Float32]], ListShape[(8)]>, <Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((8))>, <Tuple[Bool], TupleShape(NoShape)>, <Tuple[Bool], TupleShape(NoShape)>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:901/                            success = self.map_(F.partial(_adam_opt, self.opt, self.sparse_opt, self._ps_push,/
+  Return(%2)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:907/        return success/
+}
+# Order:
+#   1: @↓_apply_adam_4939:CNode_4983{[0]: ValueNode<Primitive> Return, [1]: success}
+
+
+# ===============================================================================================
+# The total of function graphs in evaluation stack: 14/15 (Ignored 1 internal frames).
+# ===============================================================================================
+
+
+# ===============================================================================================
+# The rest function graphs are the following:
+# ===============================================================================================
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: decay_weight_4942 : 0x30e231e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:429/    def decay_weight(self, gradients):/
+subgraph @decay_weight_4942(%para16_gradients) {
+  %1(CNode_4985) = call @✗decay_weight_4984()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:442/        if self.exec_weight_decay:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:442/        if self.exec_weight_decay:/
+}
+# Order:
+#   1: @decay_weight_4942:CNode_4985{[0]: ValueNode<FuncGraph> ✗decay_weight_4984}
+#   2: @decay_weight_4942:CNode_4986{[0]: ValueNode<Primitive> Return, [1]: CNode_4985}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: flatten_gradients_4941 : 0x30e232a18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:410/    def flatten_gradients(self, gradients):/
+subgraph @flatten_gradients_4941(%para17_gradients) {
+  %1(CNode_4988) = call @✗flatten_gradients_4987()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:424/        if self._use_flattened_params:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:424/        if self._use_flattened_params:/
+}
+# Order:
+#   1: @flatten_gradients_4941:CNode_4988{[0]: ValueNode<FuncGraph> ✗flatten_gradients_4987}
+#   2: @flatten_gradients_4941:CNode_4989{[0]: ValueNode<Primitive> Return, [1]: CNode_4988}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: gradients_centralization_4945 : 0x30e230218
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:452/    def gradients_centralization(self, gradients):/
+subgraph @gradients_centralization_4945(%para18_gradients) {
+  %1(CNode_4991) = call @✗gradients_centralization_4990()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:466/        if self.is_group:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:466/        if self.is_group:/
+}
+# Order:
+#   1: @gradients_centralization_4945:CNode_4991{[0]: ValueNode<FuncGraph> ✗gradients_centralization_4990}
+#   2: @gradients_centralization_4945:CNode_4992{[0]: ValueNode<Primitive> Return, [1]: CNode_4991}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗decay_weight_4984 : 0x30e233818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:429/    def decay_weight(self, gradients):/
+subgraph @✗decay_weight_4984 parent: [subgraph @decay_weight_4942]() {
+  %1(CNode_4994) = call @↓decay_weight_4993()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:442/        if self.exec_weight_decay:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:442/        if self.exec_weight_decay:/
+}
+# Order:
+#   1: @✗decay_weight_4984:CNode_4994{[0]: ValueNode<FuncGraph> ↓decay_weight_4993}
+#   2: @✗decay_weight_4984:CNode_4995{[0]: ValueNode<Primitive> Return, [1]: CNode_4994}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗flatten_gradients_4987 : 0x30e233018
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:410/    def flatten_gradients(self, gradients):/
+subgraph @✗flatten_gradients_4987 parent: [subgraph @flatten_gradients_4941]() {
+  %1(CNode_4997) = call @↓flatten_gradients_4996()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:424/        if self._use_flattened_params:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:424/        if self._use_flattened_params:/
+}
+# Order:
+#   1: @✗flatten_gradients_4987:CNode_4997{[0]: ValueNode<FuncGraph> ↓flatten_gradients_4996}
+#   2: @✗flatten_gradients_4987:CNode_4998{[0]: ValueNode<Primitive> Return, [1]: CNode_4997}
+
+
+subgraph attr:
+subgraph instance: assign_4948 : 0x10a82e218
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/ops/function/parameter_func.py:24/def assign(variable, value):/
+subgraph @assign_4948(%para19_variable, %para20_value) {
+  %1(CNode_4999) = S_Prim_Assign[output_names: ["output"], side_effect_mem: Bool(1), input_names: ["ref", "value"]](%para19_variable, %para20_value)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/ops/function/parameter_func.py:58/    return assign_(variable, value)/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/ops/function/parameter_func.py:58/    return assign_(variable, value)/
+}
+# Order:
+#   1: @assign_4948:CNode_4999{[0]: ValueNode<DoSignaturePrimitive> S_Prim_Assign, [1]: param_variable, [2]: param_value}
+#   2: @assign_4948:CNode_5000{[0]: ValueNode<Primitive> Return, [1]: CNode_4999}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: get_lr_4956 : 0x10a05e618
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:739/    def get_lr(self):/
+subgraph @get_lr_4956 parent: [subgraph @mindspore_nn_optim_adam_Adam_construct_4924]() {
+  %1(CNode_5002) = call @✗get_lr_5001()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:748/        if self.dynamic_lr:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:748/        if self.dynamic_lr:/
+}
+# Order:
+#   1: @get_lr_4956:CNode_5002{[0]: ValueNode<FuncGraph> ✗get_lr_5001}
+#   2: @get_lr_4956:CNode_5003{[0]: ValueNode<Primitive> Return, [1]: CNode_5002}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: _grad_sparse_indices_deduplicate_4958 : 0x10a033a18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @_grad_sparse_indices_deduplicate_4958(%para21_gradients) {
+  %1(CNode_5004) = S_Prim_not_equal("CPU", "CPU")
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %2(CNode_5005) = Cond(%1, Bool(0))
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %3(CNode_5006) = Switch(%2, @↰_grad_sparse_indices_deduplicate_5007, @↱_grad_sparse_indices_deduplicate_5008)
+      : (<null>, <null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %4(CNode_5009) = %3()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %5(CNode_5010) = Cond(%4, Bool(0))
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %6(CNode_5011) = Switch(%5, @✓_grad_sparse_indices_deduplicate_5012, @✗_grad_sparse_indices_deduplicate_5013)
+      : (<null>, <null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %7(CNode_5014) = %6()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  %8(CNode_5016) = call @↓_grad_sparse_indices_deduplicate_5015(%7)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/adam.py:919/        gradients = self._grad_sparse_indices_deduplicate(gradients)/
+  Return(%8)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+}
+# Order:
+#   1: @_grad_sparse_indices_deduplicate_4958:CNode_5004{[0]: ValueNode<DoSignaturePrimitive> S_Prim_not_equal, [1]: ValueNode<StringImm> CPU, [2]: ValueNode<StringImm> CPU}
+#   2: @_grad_sparse_indices_deduplicate_4958:CNode_5005{[0]: ValueNode<Primitive> Cond, [1]: CNode_5004, [2]: ValueNode<BoolImm> false}
+#   3: @_grad_sparse_indices_deduplicate_4958:CNode_5006{[0]: ValueNode<Primitive> Switch, [1]: CNode_5005, [2]: ValueNode<FuncGraph> ↰_grad_sparse_indices_deduplicate_5007, [3]: ValueNode<FuncGraph> ↱_grad_sparse_indices_deduplicate_5008}
+#   4: @_grad_sparse_indices_deduplicate_4958:CNode_5009{[0]: CNode_5006}
+#   5: @_grad_sparse_indices_deduplicate_4958:CNode_5010{[0]: ValueNode<Primitive> Cond, [1]: CNode_5009, [2]: ValueNode<BoolImm> false}
+#   6: @_grad_sparse_indices_deduplicate_4958:CNode_5011{[0]: ValueNode<Primitive> Switch, [1]: CNode_5010, [2]: ValueNode<FuncGraph> ✓_grad_sparse_indices_deduplicate_5012, [3]: ValueNode<FuncGraph> ✗_grad_sparse_indices_deduplicate_5013}
+#   7: @_grad_sparse_indices_deduplicate_4958:CNode_5014{[0]: CNode_5011}
+#   8: @_grad_sparse_indices_deduplicate_4958:CNode_5016{[0]: ValueNode<FuncGraph> ↓_grad_sparse_indices_deduplicate_5015, [1]: CNode_5014}
+#   9: @_grad_sparse_indices_deduplicate_4958:CNode_5017{[0]: ValueNode<Primitive> Return, [1]: CNode_5016}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: scale_grad_4957 : 0x30e22b218
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:471/    def scale_grad(self, gradients):/
+subgraph @scale_grad_4957(%para22_gradients) {
+  %1(CNode_5019) = call @✗scale_grad_5018()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:485/        if self.need_scale:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:485/        if self.need_scale:/
+}
+# Order:
+#   1: @scale_grad_4957:CNode_5019{[0]: ValueNode<FuncGraph> ✗scale_grad_5018}
+#   2: @scale_grad_4957:CNode_5020{[0]: ValueNode<Primitive> Return, [1]: CNode_5019}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗gradients_centralization_4990 : 0x30e230818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:452/    def gradients_centralization(self, gradients):/
+subgraph @✗gradients_centralization_4990 parent: [subgraph @gradients_centralization_4945]() {
+  %1(CNode_5022) = call @↓gradients_centralization_5021()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:466/        if self.is_group:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:466/        if self.is_group:/
+}
+# Order:
+#   1: @✗gradients_centralization_4990:CNode_5022{[0]: ValueNode<FuncGraph> ↓gradients_centralization_5021}
+#   2: @✗gradients_centralization_4990:CNode_5023{[0]: ValueNode<Primitive> Return, [1]: CNode_5022}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓decay_weight_4993 : 0x30e232418
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:429/    def decay_weight(self, gradients):/
+subgraph @↓decay_weight_4993 parent: [subgraph @decay_weight_4942]() {
+  Return(%para16_gradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:450/        return gradients/
+}
+# Order:
+#   1: @↓decay_weight_4993:CNode_5024{[0]: ValueNode<Primitive> Return, [1]: param_gradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓flatten_gradients_4996 : 0x30e233e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:410/    def flatten_gradients(self, gradients):/
+subgraph @↓flatten_gradients_4996 parent: [subgraph @flatten_gradients_4941]() {
+  Return(%para17_gradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:427/        return gradients/
+}
+# Order:
+#   1: @↓flatten_gradients_4996:CNode_5025{[0]: ValueNode<Primitive> Return, [1]: param_gradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗get_lr_5001 : 0x10a5fac18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:739/    def get_lr(self):/
+subgraph @✗get_lr_5001 parent: [subgraph @mindspore_nn_optim_adam_Adam_construct_4924]() {
+  %1(CNode_5027) = call @↓get_lr_5026()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:748/        if self.dynamic_lr:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:748/        if self.dynamic_lr:/
+}
+# Order:
+#   1: @✗get_lr_5001:CNode_5027{[0]: ValueNode<FuncGraph> ↓get_lr_5026}
+#   2: @✗get_lr_5001:CNode_5028{[0]: ValueNode<Primitive> Return, [1]: CNode_5027}
+
+
+subgraph attr:
+after_block : 1
+skip_auto_parallel_compile : 1
+subgraph instance: ↓_grad_sparse_indices_deduplicate_5015 : 0x10a5b2c18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @↓_grad_sparse_indices_deduplicate_5015(%para23_) {
+  Return(%para23_фgradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:521/        return gradients/
+}
+# Order:
+#   1: @↓_grad_sparse_indices_deduplicate_5015:CNode_5029{[0]: ValueNode<Primitive> Return, [1]: param_фgradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✓_grad_sparse_indices_deduplicate_5012 : 0x10a0c4418
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @✓_grad_sparse_indices_deduplicate_5012 parent: [subgraph @_grad_sparse_indices_deduplicate_4958]() {
+  %1(CNode_5030) = S_Prim_Partial[side_effect_propagate: I64(1)](S_Prim_indices_deduplicate)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:520/            gradients = self.map_(F.partial(_indices_deduplicate), gradients)/
+  %2(gradients) = S_Prim_map(%1, %para21_gradients)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:520/            gradients = self.map_(F.partial(_indices_deduplicate), gradients)/
+  Return(%2)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:520/            gradients = self.map_(F.partial(_indices_deduplicate), gradients)/
+}
+# Order:
+#   1: @✓_grad_sparse_indices_deduplicate_5012:CNode_5030{[0]: ValueNode<DoSignaturePrimitive> S_Prim_Partial, [1]: ValueNode<DoSignaturePrimitive> S_Prim_indices_deduplicate}
+#   2: @✓_grad_sparse_indices_deduplicate_5012:gradients{[0]: ValueNode<DoSignaturePrimitive> S_Prim_map, [1]: CNode_5030, [2]: param_gradients}
+#   3: @✓_grad_sparse_indices_deduplicate_5012:CNode_5031{[0]: ValueNode<Primitive> Return, [1]: gradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗_grad_sparse_indices_deduplicate_5013 : 0x10a026e18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @✗_grad_sparse_indices_deduplicate_5013 parent: [subgraph @_grad_sparse_indices_deduplicate_4958]() {
+  Return(%para21_gradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+}
+# Order:
+#   1: @✗_grad_sparse_indices_deduplicate_5013:CNode_5032{[0]: ValueNode<Primitive> Return, [1]: param_gradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↰_grad_sparse_indices_deduplicate_5007 : 0x10a02c218
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @↰_grad_sparse_indices_deduplicate_5007() {
+  Return(Bool(1))
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+}
+# Order:
+#   1: @↰_grad_sparse_indices_deduplicate_5007:CNode_5033{[0]: ValueNode<Primitive> Return, [1]: ValueNode<BoolImm> true}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↱_grad_sparse_indices_deduplicate_5008 : 0x10a10fc18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:517/    def _grad_sparse_indices_deduplicate(self, gradients):/
+subgraph @↱_grad_sparse_indices_deduplicate_5008 parent: [subgraph @_grad_sparse_indices_deduplicate_4958]() {
+  %1(CNode_5004) = $(_grad_sparse_indices_deduplicate_4958):S_Prim_not_equal("CPU", "CPU")
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:519/        if self._target != 'CPU' and self._unique:/
+}
+# Order:
+#   1: @↱_grad_sparse_indices_deduplicate_5008:CNode_5034{[0]: ValueNode<Primitive> Return, [1]: CNode_5004}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗scale_grad_5018 : 0x30e22b818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:471/    def scale_grad(self, gradients):/
+subgraph @✗scale_grad_5018 parent: [subgraph @scale_grad_4957]() {
+  %1(CNode_5036) = call @↓scale_grad_5035()
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:485/        if self.need_scale:/
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:485/        if self.need_scale:/
+}
+# Order:
+#   1: @✗scale_grad_5018:CNode_5036{[0]: ValueNode<FuncGraph> ↓scale_grad_5035}
+#   2: @✗scale_grad_5018:CNode_5037{[0]: ValueNode<Primitive> Return, [1]: CNode_5036}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓gradients_centralization_5021 : 0x30e231818
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:452/    def gradients_centralization(self, gradients):/
+subgraph @↓gradients_centralization_5021 parent: [subgraph @gradients_centralization_4945]() {
+  Return(%para18_gradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:469/        return gradients/
+}
+# Order:
+#   1: @↓gradients_centralization_5021:CNode_5038{[0]: ValueNode<Primitive> Return, [1]: param_gradients}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓get_lr_5026 : 0x10a0c1a18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:739/    def get_lr(self):/
+subgraph @↓get_lr_5026 parent: [subgraph @mindspore_nn_optim_adam_Adam_construct_4924]() {
+  Return(%para8_learning_rate)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:756/        return lr/
+}
+# Order:
+#   1: @↓get_lr_5026:CNode_5039{[0]: ValueNode<Primitive> Return, [1]: param_learning_rate}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ↓scale_grad_5035 : 0x30e22fc18
+# In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:471/    def scale_grad(self, gradients):/
+subgraph @↓scale_grad_5035 parent: [subgraph @scale_grad_4957]() {
+  Return(%para22_gradients)
+      : (<null>)
+      #scope: (Default)
+      # In file /opt/miniconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/optimizer.py:488/        return gradients/
+}
+# Order:
+#   1: @↓scale_grad_5035:CNode_5040{[0]: ValueNode<Primitive> Return, [1]: param_gradients}
+
+
