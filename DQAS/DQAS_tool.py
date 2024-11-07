@@ -29,12 +29,12 @@ def generate_pauli_string(n, seed=None):
     return " ".join(pauli_string),"".join(pauli_string_without_num)
 
 
-n_parameterized = 8
-n_layer = 3
+n_parameterized = 12
+n_layer = 6
 stddev = 0.02
 shape_nnp = (n_layer, n_parameterized)
 nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
-nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
+# nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
 unbound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[0] for i in range(n_parameterized)]
 bound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[1] for i in range(8,12)]
 loss_fn = ms.nn.SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean') 
@@ -91,10 +91,13 @@ def vag_nnp(Structure_params: np.array, Ansatz_params: np.array,n_layer:int=3,n_
     value,grad_ansatz_params = vag(训练数据,标签数据)
     """
     ansatz = Mindspore_ansatz(Structure_params, n_layer=n_layer, n_qbits=n_qbits)
-    sim = Simulator(backend='mqvector', n_qubits=8)
+    sim = Simulator(backend='mqvector', n_qubits=n_qbits)
     hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
     grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    print(Ansatz_params.shape)
     Mylayer = MQLayer(grad_ops,ms.Tensor(Ansatz_params,ms.float64).reshape(-1))
+
+
     def forward_fn(encode_p,y_label):
         eval_obserables = Mylayer(encode_p)
         loss = loss_fn(eval_obserables, y_label)
