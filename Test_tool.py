@@ -78,5 +78,7 @@ def Test_ansatz(ansatz:Circuit=None,learning_rate=0.01,epochs:int=15):
     monitor = LossMonitor(20)                                                     
     acc = StepAcc(model, test_loader)                                 
     model.train(epochs, train_loader, callbacks=[monitor, acc], dataset_sink_mode=False)
+    
+    
     return acc.acc
     

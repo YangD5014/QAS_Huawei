@@ -11,6 +11,9 @@ from mindspore import Tensor,ops,Parameter
 from mindquantum.core.gates import UnivMathGate
 from mindquantum.core.operators import Hamiltonian             # 导入Hamiltonian模块，用于构建哈密顿量
 from mindquantum.framework import MQLayer,MQOps
+import sys
+sys.path.append('..')
+from Test_tool import Test_ansatz
 
 
 
@@ -35,6 +38,7 @@ stddev = 0.02
 shape_nnp = (n_layer, n_parameterized)
 nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
 # nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
+np.random.seed(10)
 unbound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[0] for i in range(n_parameterized)]
 bound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[1] for i in range(8,12)]
 loss_fn = ms.nn.SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean') 
@@ -48,7 +52,7 @@ def one_hot(labels, num_classes):
 
 
 
-def Mindspore_ansatz(Structure_p:np.array,n_layer:int,n_qbits:int=8):
+def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,num_layer:int=6,n_qbits:int=8):
     """
     和 DQAS 文章描述的一致，生成权重线路
     Structure_p:np.array DQAS中的权重参数,
@@ -67,9 +71,11 @@ def Mindspore_ansatz(Structure_p:np.array,n_layer:int,n_qbits:int=8):
         
     ansatz = Circuit()
     pr_gen = PRGenerator('ansatz')
+    #print(my_stp.shape)
     for i in range(n_layer):
         paramertized_part_count=0
-        for index_op,each_op in enumerate(unbound_opeartor_pool):
+        for index_op,each_op in enumerate(parameterized_pool):
+            #print(my_stp[i,index_op])
             ansatz += TimeEvolution(QubitOperator(terms=each_op,coefficient=pr_gen.new()),time=float(my_stp[i,index_op])).circuit
             paramertized_part_count+=1
             
@@ -85,16 +91,17 @@ def Mindspore_ansatz(Structure_p:np.array,n_layer:int,n_qbits:int=8):
 
 
 
-def vag_nnp(Structure_params: np.array, Ansatz_params: np.array,n_layer:int=3,n_qbits:int=8):
+def vag_nnp(Structure_params: np.array, Ansatz_params: np.array,paramerterized_pool:list,num_layer:int=6,n_qbits:int=8):
     """
     用于计算梯度 Ansatz_params关于 loss 的梯度
     value,grad_ansatz_params = vag(训练数据,标签数据)
     """
-    ansatz = Mindspore_ansatz(Structure_params, n_layer=n_layer, n_qbits=n_qbits)
+    ansatz = Mindspore_ansatz(Structure_p=Structure_params,parameterized_pool=paramerterized_pool,
+                              num_layer=num_layer,n_qbits=n_qbits)
     sim = Simulator(backend='mqvector', n_qubits=n_qbits)
     hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
     grad_ops = sim.get_expectation_with_grad(hams, ansatz)
-    print(Ansatz_params.shape)
+    #print(Ansatz_params.shape)
     Mylayer = MQLayer(grad_ops,ms.Tensor(Ansatz_params,ms.float64).reshape(-1))
 
 
@@ -108,10 +115,10 @@ def vag_nnp(Structure_params: np.array, Ansatz_params: np.array,n_layer:int=3,n_
     return grad_fn
 
 
-def vag_nnp_function(Structure_params,Ansatz_params,X_train, y_train):
-    grad_fn = vag_nnp(Structure_params, Ansatz_params, n_layer=3, n_qbits=8)
-    loss, grads = grad_fn(ms.Tensor(X_train), ms.Tensor(y_train))
-    return loss, grads
+# def vag_nnp_function(Structure_params,Ansatz_params,X_train, y_train):
+#     grad_fn = vag_nnp(Structure_params, Ansatz_params, n_layer=3, n_qbits=8)
+#     loss, grads = grad_fn(ms.Tensor(X_train), ms.Tensor(y_train))
+#     return loss, grads
 
 
 def sampling_from_structure(structures: np.array,num_layer:int,shape_parametized:int):
@@ -124,3 +131,32 @@ def sampling_from_structure(structures: np.array,num_layer:int,shape_parametized
         sample = np.random.choice(shape_parametized, p=prob_np[i])
         samples.append(sample)
     return np.array(samples)
+
+
+def DQASAnsatz_from_result(best_candidate:np.array,parameterized_pool:list,num_layer:int=6,n_qbits:int=8):
+    prg = PRGenerator('encoder')
+    if best_candidate.shape[0] != num_layer:
+        raise ValueError('best_candidate shape must be equal to num_layer')
+    
+    nqbits = n_qbits
+    encoder = Circuit()
+    encoder += UN(H, nqbits)                                 
+    for i in range(nqbits):                                  
+        encoder += RY(prg.new()).on(i)     
+    
+    ansatz = Circuit()
+    pr_gen = PRGenerator('ansatz')            
+    for index_op,each_op in enumerate(best_candidate):
+        ansatz += TimeEvolution(QubitOperator(terms=parameterized_pool[each_op],coefficient=pr_gen.new()),time=1).circuit
+    
+    ansatz = encoder.as_encoder() + ansatz.as_ansatz()
+    acc = Test_ansatz(ansatz)
+    return ansatz,acc
+
+
+    
+    
+    
+    
+    
+
