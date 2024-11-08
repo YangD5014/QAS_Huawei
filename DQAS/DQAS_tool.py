@@ -11,9 +11,11 @@ from mindspore import Tensor,ops,Parameter
 from mindquantum.core.gates import UnivMathGate
 from mindquantum.core.operators import Hamiltonian             # 导入Hamiltonian模块，用于构建哈密顿量
 from mindquantum.framework import MQLayer,MQOps
+import mindspore.numpy as mnp
 import sys
 sys.path.append('..')
 from Test_tool import Test_ansatz
+from data_processing import X_train,X_test,y_train,y_test
 
 
 
@@ -59,6 +61,9 @@ def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,num_layer:int=
     Ansatz_p:np.array  DQAS中的Ansatz参数,
     
     """
+    
+    if Structure_p.shape[0] != num_layer:
+        raise ValueError('Structure_p shape must be equal to num_layer')
     softmax = ops.Softmax()
     my_stp = softmax(Tensor(Structure_p, ms.float32))
     
@@ -72,7 +77,7 @@ def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,num_layer:int=
     ansatz = Circuit()
     pr_gen = PRGenerator('ansatz')
     #print(my_stp.shape)
-    for i in range(n_layer):
+    for i in range(num_layer):
         paramertized_part_count=0
         for index_op,each_op in enumerate(parameterized_pool):
             #print(my_stp[i,index_op])
@@ -128,7 +133,7 @@ def sampling_from_structure(structures: np.array,num_layer:int,shape_parametized
     prob_np = prob.asnumpy()  # 将 MindSpore Tensor 转换为 NumPy 数组
     samples = []
     for i in range(num_layer):
-        sample = np.random.choice(shape_parametized, p=prob_np[i])
+        sample = np.random.choice(prob_np[i].shape[0], p=prob_np[i])
         samples.append(sample)
     return np.array(samples)
 
@@ -153,10 +158,49 @@ def DQASAnsatz_from_result(best_candidate:np.array,parameterized_pool:list,num_l
     acc = Test_ansatz(ansatz)
     return ansatz,acc
 
+def DQAS_accuracy(ansatz: Circuit,Network_params:np.array,n_qbits:int=8):
+    
+    sim = Simulator(backend='mqvector', n_qubits=n_qbits)
+    hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
+    grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    op = MQOps(grad_ops)
+    raw_result = op(ms.Tensor(X_train),ms.Tensor(Network_params).reshape(-1))
+    softmax_pro = ops.Softmax()(raw_result)
+    predicted_result= ops.Argmax()(softmax_pro)
+    equal_elements = ops.equal(ms.Tensor(y_train),predicted_result)
+    num_equal_elements = ops.reduce_sum(equal_elements.astype(ms.int32))
+    acc = num_equal_elements.asnumpy()/X_train.shape[0]
+    return acc
 
     
     
     
     
-    
 
+
+def nmf_gradient(structures:np.array, oh:ms.Tensor,num_layer: int,size_pool:int):
+    """
+    使用 MindSpore 实现蒙特卡洛梯度计算。
+    """
+      # Step 1: 获取选择的索引
+    choice = ops.Argmax(axis=-1)(oh)
+    # Step 2: 计算概率
+    softmax = ops.Softmax(axis=-1)
+    prob = softmax(ms.Tensor(structures))
+    # Step 3: 获取概率矩阵中的值
+    indices = mnp.stack((mnp.arange(num_layer, dtype=ms.int64), choice), axis=1)
+    prob = ops.GatherNd()(prob, indices)
+    # Step 4: 变换概率矩阵
+    prob = prob.reshape(-1, 1)
+    prob = ops.Tile()(prob, (1, size_pool))
+    
+    # Step 5: 生成蒙特卡洛梯度
+    gradient = ops.TensorScatterAdd()(Tensor(-prob, ms.float64), indices, mnp.ones((num_layer,), dtype=ms.float64))
+    return gradient
+    
+    
+# 对向量化版本的封装
+# nmf_gradient_vmap = ops.vmap(nmf_gradient, in_axes=(None, 0, None, None))
+
+def best_from_structure(structures: np.array)->Tensor:
+    return ops.Argmax(axis=-1)(ms.Tensor(structures))
