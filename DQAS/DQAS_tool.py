@@ -34,15 +34,15 @@ def generate_pauli_string(n, seed=None):
     return " ".join(pauli_string),"".join(pauli_string_without_num)
 
 
-n_parameterized = 12
-n_layer = 6
-stddev = 0.02
-shape_nnp = (n_layer, n_parameterized)
-nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
+# n_parameterized = 12
+# n_layer = 6
+# stddev = 0.02
+# shape_nnp = (n_layer, n_parameterized)
 # nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
-np.random.seed(10)
-unbound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[0] for i in range(n_parameterized)]
-bound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[1] for i in range(8,12)]
+# nnp = np.random.normal(loc=0.0, scale=stddev, size=shape_nnp).astype(np.float64)
+# np.random.seed(10)
+# unbound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[0] for i in range(n_parameterized)]
+# bound_opeartor_pool = [generate_pauli_string(n=8,seed=i)[1] for i in range(8,12)]
 loss_fn = ms.nn.SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean') 
 
 def one_hot(labels, num_classes):
@@ -54,14 +54,13 @@ def one_hot(labels, num_classes):
 
 
 
-def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,num_layer:int=6,n_qbits:int=8):
+def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,unparameterized_pool:list,num_layer:int=6,n_qbits:int=8):
     """
     和 DQAS 文章描述的一致，生成权重线路
     Structure_p:np.array DQAS中的权重参数,
     Ansatz_p:np.array  DQAS中的Ansatz参数,
     
     """
-    
     if Structure_p.shape[0] != num_layer:
         raise ValueError('Structure_p shape must be equal to num_layer')
     softmax = ops.Softmax()
@@ -84,11 +83,11 @@ def Mindspore_ansatz(Structure_p:np.array,parameterized_pool:list,num_layer:int=
             ansatz += TimeEvolution(QubitOperator(terms=each_op,coefficient=pr_gen.new()),time=float(my_stp[i,index_op])).circuit
             paramertized_part_count+=1
             
-        # for index_op,each_op in enumerate(bound_opeartor_pool):
-        #     op = GroupedPauli(each_op)
-        #     tmp_cir = Circuit([GroupedPauli(each_op).on(range(n_qbits))])
-        #     matrix = tmp_cir.matrix()
-        #     ansatz += UnivMathGate(matrix_value=matrix*float(my_stp[i,index_op+paramertized_part_count]),name=f'{my_stp[i,index_op+paramertized_part_count]}*{op.pauli_string}').on(range(n_qbits))  
+        for index_op,each_op in enumerate(unparameterized_pool):
+            op = GroupedPauli(each_op)
+            tmp_cir = Circuit([GroupedPauli(each_op).on(range(n_qbits))])
+            matrix = tmp_cir.matrix()
+            ansatz += UnivMathGate(matrix_value=matrix*float(my_stp[i,index_op+paramertized_part_count]),name=f'{my_stp[i,index_op+paramertized_part_count]}*{op.pauli_string}').on(range(n_qbits))  
     
     finnal_ansatz = encoder.as_encoder() + ansatz.as_ansatz()
     return finnal_ansatz
@@ -204,3 +203,96 @@ def nmf_gradient(structures:np.array, oh:ms.Tensor,num_layer: int,size_pool:int)
 
 def best_from_structure(structures: np.array)->Tensor:
     return ops.Argmax(axis=-1)(ms.Tensor(structures))
+
+
+def Mindspore_ansatz2(Structure_p:np.array,
+                     parameterized_pool:list,
+                     unparameterized_pool:list,
+                     num_layer:int=6,
+                     n_qbits:int=8):
+    """
+    和 DQAS 文章描述的一致，生成权重线路
+    更新了非参数化门的算符池引入
+    Structure_p:np.array DQAS中的权重参数,
+    Ansatz_p:np.array  DQAS中的Ansatz参数,
+    
+    """
+    if Structure_p.shape[0] != num_layer:
+        raise ValueError('Structure_p shape must be equal to num_layer')
+    
+    if Structure_p.shape[1] != len(parameterized_pool)+len(unparameterized_pool):
+        raise ValueError('Structure_p shape must be equal to size of pool')
+    # softmax = ops.Softmax()
+    # my_stp = softmax(Tensor(Structure_p, ms.float32))
+    if isinstance(Structure_p, np.ndarray):
+        my_stp = ms.Tensor(Structure_p, ms.float32)
+    else:
+        my_stp = Structure_p
+        
+    prg = PRGenerator('encoder')
+    nqbits = n_qbits
+    encoder = Circuit()
+    encoder += UN(H, nqbits)                                 
+    for i in range(nqbits):                                  
+        encoder += RY(prg.new()).on(i)                 
+        
+    ansatz = Circuit()
+    pr_gen = PRGenerator('ansatz')
+    #print(my_stp.shape)
+    for i in range(num_layer):
+        paramertized_part_count=0
+        for index_op,each_op in enumerate(parameterized_pool):
+            if my_stp[i,index_op] == 0:
+                continue
+            #print(my_stp[i,index_op])
+            ansatz += TimeEvolution(QubitOperator(terms=each_op,coefficient=pr_gen.new()),time=float(my_stp[i,index_op])).circuit
+            paramertized_part_count+=1
+            
+        for index_op,each_op in enumerate(unparameterized_pool):
+            if my_stp[i,index_op+paramertized_part_count] == 0:
+                continue
+            op = GroupedPauli(each_op)
+            tmp_cir = Circuit([GroupedPauli(each_op).on(range(n_qbits))])
+            matrix = tmp_cir.matrix()
+            ansatz += UnivMathGate(matrix_value=matrix*float(my_stp[i,index_op+paramertized_part_count]),name=f'{my_stp[i,index_op+paramertized_part_count]}*{op.pauli_string}').on(range(n_qbits))  
+    
+    finnal_ansatz = encoder.as_encoder() + ansatz.as_ansatz()
+    return finnal_ansatz
+
+
+
+def vag_nnp2(Structure_params: np.array, Ansatz_params: np.array,paramerterized_pool:list,unparamerterized_pool:list,num_layer:int=6,n_qbits:int=8):
+    """
+    用于计算梯度 Ansatz_params关于 loss 的梯度
+    value,grad_ansatz_params = vag(训练数据,标签数据)
+    """
+    if isinstance(Structure_params, np.ndarray):
+        mystp= ms.Tensor(Structure_params,ms.float32)
+    else:
+        mystp = Structure_params
+    ansatz = Mindspore_ansatz2(Structure_p=mystp,parameterized_pool=paramerterized_pool,
+                               unparameterized_pool=unparamerterized_pool,
+                              num_layer=num_layer,n_qbits=n_qbits)
+    
+    
+    
+    sim = Simulator(backend='mqvector', n_qubits=n_qbits)
+    hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
+    grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    #print(Ansatz_params.shape)
+    nnp_index = [ops.Argmax()(i) for i in ms.Tensor(mystp,ms.float32)]
+    print(nnp_index)
+    ansatz_parameters = [Ansatz_params[layer_index][i] for layer_index,i in enumerate(nnp_index)]
+    print(ansatz_parameters)
+    
+    Mylayer = MQLayer(grad_ops,ms.Tensor(ansatz_parameters,ms.float64).reshape(-1))
+
+
+    def forward_fn(encode_p,y_label):
+        eval_obserables = Mylayer(encode_p)
+        loss = loss_fn(eval_obserables, y_label)
+        return loss
+    # nnp = ms.Tensor(Ansatz_params).reshape(-1)
+    grad_fn = ms.value_and_grad(fn=forward_fn,grad_position=None,weights=Mylayer.trainable_params())
+    
+    return grad_fn
