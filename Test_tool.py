@@ -50,7 +50,7 @@ def Test_ansatz(ansatz:Circuit=None,learning_rate=0.01,epochs:int=15):
     prg = PRGenerator('alpha')
     nqbits = 8
     encoder = Circuit()
-    encoder += UN(H, nqbits)                                  # H门作用在每1位量子比特
+    # encoder += UN(H, nqbits)                                  # H门作用在每1位量子比特
     for i in range(nqbits):                                   # i = 0, 1, 2, 3
         encoder += RY(prg.new()).on(i)                 # RZ(alpha_i)门作用在第i位量子比特
     encoder = encoder.no_grad()
