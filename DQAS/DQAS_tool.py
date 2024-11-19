@@ -605,7 +605,7 @@ def vag_nnp_micro(Structure_params: np.array, Ansatz_params: np.array,paramerter
         for index,i in enumerate(op_index):
             if i>=len(paramerterized_pool):
                 continue
-            print(each_sub,index,i)
+            #print(each_sub,index,i)
             ansatz_pr.append(Ansatz_params[each_sub,index,i])
 
     Mylayer = MQLayer(grad_ops,ms.Tensor(ansatz_pr,ms.float64).reshape(-1))
@@ -631,7 +631,7 @@ def zeroslike_grad_nnp_micro(batch_sturcture: Union[np.ndarray, ms.Tensor], grad
         mystp = batch_sturcture  # 如果 batch_sturcture 已经是 ms.Tensor 类型
 
     op_index = [ops.Argmax()(i) for i in mystp]
-    print(op_index)
+    #print(op_index)
     zeros_grad_nnp = np.zeros_like(ansatz_parameters)
     count = 0
     for each_sub in range(7):
