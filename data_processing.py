@@ -57,7 +57,13 @@ def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST,PCA_dim:int=10):
     pca = PCA(n_components=PCA_dim)
     X_pca = pca.fit_transform(X_flattened)
     
-    X_train, X_test, y_train, y_test = train_test_split(X_pca, y_sampled, test_size=0.2, random_state=0, shuffle=True) # 将数据集划分为训练集和测试集
+    # 将 PCA 处理后的值缩放到 [0, π] 之间
+    X_pca_min = np.min(X_pca)
+    X_pca_max = np.max(X_pca)
+    X_pca_scaled = np.pi * (X_pca - X_pca_min) / (X_pca_max - X_pca_min)
+    
+    
+    X_train, X_test, y_train, y_test = train_test_split(X_pca_scaled, y_sampled, test_size=0.2, random_state=0, shuffle=True) # 将数据集划分为训练集和测试集
     y_train[y_train==3]=1
     y_train[y_train==6]=0
     y_test[y_test==3]=1
@@ -67,9 +73,74 @@ def  PCA_data_preprocessing(mnist_dataset:datasets.MNIST,PCA_dim:int=10):
     
     
     return X_train, X_test, y_train, y_test
-    
+
 mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=None)
 X_train, X_test, y_train, y_test = PCA_data_preprocessing(mnist_dataset,8)
+
+def  PCA_data_preprocessing_micro(mnist_dataset:datasets.MNIST=mnist_dataset,
+                                  PCA_dim:int=10,ratio:float=0.9):
+    '''
+    将 28*28 的 MNIST 手写数字图像 基于PCA进行压缩
+    
+    '''
+    #mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=None)
+    filtered_data = filter_3_and_6((mnist_dataset.data, mnist_dataset.targets))
+    X_data, y = filtered_data  # X 图像数据 y 标签
+    
+    X_data_3, y_data_3 = sample_data(X_data, y, label=3, sample_ratio=ratio)
+    X_data_6, y_data_6 = sample_data(X_data, y, label=6, sample_ratio=ratio)
+    #合并抽样后的数据
+    X_sampled = torch.cat((X_data_3, X_data_6), dim=0)
+    y_sampled = torch.cat((y_data_3, y_data_6), dim=0)
+    
+    n_samples = X_sampled.shape[0]
+    X_flattened = X_sampled.view(n_samples, -1)  # 将图像展平为一维向量
+    X_flattened = X_flattened/255
+    pca = PCA(n_components=PCA_dim)
+    X_pca = pca.fit_transform(X_flattened)
+    
+    # 将 PCA 处理后的值缩放到 [0, π] 之间
+    X_pca_min = np.min(X_pca)
+    X_pca_max = np.max(X_pca)
+    X_pca_scaled = np.pi * (X_pca - X_pca_min) / (X_pca_max - X_pca_min)
+    
+    
+    X_train, X_test, y_train, y_test = train_test_split(X_pca_scaled, y_sampled, test_size=0.2, random_state=0, shuffle=True) # 将数据集划分为训练集和测试集
+    y_train[y_train==3]=1
+    y_train[y_train==6]=0
+    y_test[y_test==3]=1
+    y_test[y_test==6]=0
+    y_train = y_train.numpy()
+    y_test = y_test.numpy()
+    
+    
+    return X_train, X_test, y_train, y_test
+
+
+    
+
+
+
+def getfulldata(mnist_dataset:datasets.MNIST,PCA_dim:int=8):
+    filtered_data = filter_3_and_6((mnist_dataset.data, mnist_dataset.targets))
+    X_data, y = filtered_data  # X 图像数据 y 标签
+    X_flattened = X_data.view(X_data.shape[0], -1)  # 将图像展平为一维向量
+    X_flattened = X_flattened/255
+    pca = PCA(n_components=PCA_dim)
+    X_pca = pca.fit_transform(X_flattened)
+    X_pca_min = np.min(X_pca)
+    X_pca_max = np.max(X_pca)
+    X_pca_scaled = np.pi * (X_pca - X_pca_min) / (X_pca_max - X_pca_min)
+    y[y==3]=1
+    y[y==6]=0
+    y[y==3]=1
+    y[y==6]=0
+    return X_pca_scaled,y
+x_fulldata, y = getfulldata(mnist_dataset,8)
+
+    
+    
+    
     
     
 def amplitude_encoding(X_train:np.array,X_test:np.array):

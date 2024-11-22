@@ -597,7 +597,7 @@ def vag_nnp_micro(Structure_params: np.array, Ansatz_params: np.array,paramerter
     
     sim = Simulator(backend='mqvector', n_qubits=n_qbits)
     hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
-    grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    grad_ops = sim.get_expectation_with_grad(hams, ansatz,parallel_worker=5)
     op_index = [ops.Argmax()(i) for i in mystp]
     #print(f'op_index={op_index}')
     ansatz_pr=[]
@@ -640,5 +640,156 @@ def zeroslike_grad_nnp_micro(batch_sturcture: Union[np.ndarray, ms.Tensor], grad
                 continue
             zeros_grad_nnp[each_sub, index,i] = grad_nnp[count]
             count += 1
+        
+    return zeros_grad_nnp
+
+
+
+def vag_nnp_micro_minipool(Structure_params: np.array, Ansatz_params: np.array,paramerterized_pool:list[Circuit],unparamerterized_pool:list[Circuit],num_layer:int=6,n_qbits:int=8):
+    """
+    更新: 只在对应位置上更新nnp梯度
+    用于计算梯度 Ansatz_params关于 loss 的梯度
+    value,grad_ansatz_params = vag(训练数据,标签数据)
+    """
+    if isinstance(Structure_params, np.ndarray):
+        mystp= ms.Tensor(Structure_params,ms.float32)
+    else:
+        mystp = Structure_params
+    ansatz = Mindspore_ansatz_micro_minipool(Structure_p=mystp,  
+                                             parameterized_pool=paramerterized_pool,
+                                             unparameterized_pool=unparamerterized_pool,
+                                             num_layer=num_layer,n_qbits=n_qbits)
+    
+    sim = Simulator(backend='mqvector', n_qubits=n_qbits)
+    hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
+    grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    op_index = [ops.Argmax()(i) for i in mystp]
+    #print(f'op_index={op_index}')
+    ansatz_pr = nnp_dealwith(Structure_params=Structure_params,Network_params=Ansatz_params)
+    Mylayer = MQLayer(grad_ops,ms.Tensor(ansatz_pr,ms.float64).reshape(-1))
+
+
+    def forward_fn(encode_p,y_label):
+        eval_obserables = Mylayer(encode_p)
+        loss = loss_fn(eval_obserables, y_label)
+        return loss
+    # nnp = ms.Tensor(Ansatz_params).reshape(-1)
+    grad_fn = ms.value_and_grad(fn=forward_fn,grad_position=None,weights=Mylayer.trainable_params())
+    
+    return grad_fn
+
+
+class Washing_namemap():
+    '''
+    为了更改ansatz 参数名称的迭代器
+    '''
+    def __init__(self,name:str='ansatz'):
+        self.current = 0
+        self.name = name
+        
+    def __next__(self):
+        self.current += 1
+        return self.name+str(self.current)
+    
+    
+    
+def Mindspore_ansatz_micro_minipool(Structure_p:np.array,
+                     parameterized_pool:list[Circuit],
+                     unparameterized_pool:list[Circuit],
+                     num_layer:int=6,
+                     n_qbits:int=8):
+    """
+    和 DQAS 文章描述的一致，生成权重线路
+    更新了非参数化门的算符池引入
+    Structure_p:np.array DQAS中的权重参数,
+    Ansatz_p:np.array  DQAS中的Ansatz参数,
+    """
+    if Structure_p.shape[0] != num_layer:
+        raise ValueError('Structure_p shape must be equal to num_layer')
+    
+    if Structure_p.shape[1] != len(parameterized_pool)+len(unparameterized_pool):
+        raise ValueError('Structure_p shape must be equal to size of pool')
+
+    if isinstance(Structure_p, np.ndarray):
+        my_stp = ms.Tensor(Structure_p, ms.float32)
+    else:
+        my_stp = Structure_p
+        
+    prg = PRGenerator('encoder')
+    nqbits = n_qbits
+    encoder = Circuit()
+    # encoder += UN(H, nqbits)                                 
+    for i in range(nqbits):                                  
+        encoder += RY(prg.new()).on(i)    
+    encoder = encoder.as_encoder()             
+        
+    sub_ansatz = Circuit()
+    washing_namemap = Washing_namemap()
+    #print(my_stp.shape)
+    for layer_index in range(my_stp.shape[0]):
+        for op_index in range(my_stp.shape[1]):
+            if my_stp[layer_index,op_index] == 0:
+                continue
+            if op_index < len(parameterized_pool):
+                before_ansatz = parameterized_pool[op_index]
+                #print(before_ansatz.ansatz_params_name)
+                name_map = dict(zip(before_ansatz.ansatz_params_name,[next(washing_namemap) for i in range(len(before_ansatz.ansatz_params_name))]))
+                before_ansatz = change_param_name(circuit_fn=before_ansatz,name_map=name_map)
+                sub_ansatz += before_ansatz
+            else:
+                sub_ansatz += unparameterized_pool[op_index-len(parameterized_pool)]
+    
+    whole_ansatz = Circuit()
+    whole_ansatz += wash_pr(apply(sub_ansatz,[0,1]),index=0)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[2,3]),index=1)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[4,5]),index=2)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[6,7]),index=3)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[0,2]),index=4)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[4,6]),index=5)
+    whole_ansatz += wash_pr(apply(sub_ansatz,[0,4]),index=6)
+    whole_ansatz =  wash_pr(whole_ansatz,index=None)
+                
+    finnal_ansatz = encoder.as_encoder() + whole_ansatz.as_ansatz()
+    return finnal_ansatz
+
+
+def nnp_dealwith(Structure_params:np.array,
+                 Network_params:np.array,
+                 shape_parameterized:int=2)->np.array:
+    ''''
+    从共享参数池里面获取ansatz参数
+    '''
+    candidate = best_from_structure(Structure_params)
+    ansatz_params = []
+    for each_sub in range(7):
+        for op_index,each_op in enumerate(candidate):
+            if each_op >= shape_parameterized:
+                continue
+            #print(f'each_sub:{each_sub},op={each_op}')  
+            ansatz_params.append(Network_params[each_sub,op_index,each_op,:])
+            
+    ansatz_params = np.array(ansatz_params).reshape(-1)
+    return ansatz_params
+
+
+def zeroslike_grad_nnp_micro_minipool(batch_sturcture: Union[np.ndarray, ms.Tensor], grad_nnp: Union[np.ndarray, ms.Tensor], shape_parametized: int, ansatz_parameters: np.ndarray) -> np.ndarray:
+    '''
+    用于根据算出的梯度更新ansatz参数    
+    '''
+    if isinstance(batch_sturcture, np.ndarray):
+        mystp = ms.Tensor(batch_sturcture, ms.float32)
+    else:
+        mystp = batch_sturcture  # 如果 batch_sturcture 已经是 ms.Tensor 类型
+
+    op_index = [ops.Argmax()(i) for i in mystp]
+    #print(op_index)
+    zeros_grad_nnp = np.zeros_like(ansatz_parameters)
+    count = 0
+    for each_sub in range(7):
+        for index,i in enumerate(op_index):
+            if i >= shape_parametized:
+                continue
+            zeros_grad_nnp[each_sub,index,i,:] = grad_nnp[count:count+3]
+            count += 3
         
     return zeros_grad_nnp
