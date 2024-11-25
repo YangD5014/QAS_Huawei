@@ -175,7 +175,20 @@ def DQAS_accuracy(ansatz: Circuit,Network_params:np.array,n_qbits:int=8):
     acc = num_equal_elements.asnumpy()/X_train.shape[0]
     return acc
 
+def DQAS_accuracy_custom(ansatz: Circuit,Network_params:np.array,X,y,n_qbits:int=8):
     
+    sim = Simulator(backend='mqvector', n_qubits=n_qbits)
+    hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [0, 1]]
+    grad_ops = sim.get_expectation_with_grad(hams, ansatz)
+    op = MQOps(grad_ops)
+    raw_result = op(ms.Tensor(X),ms.Tensor(Network_params).reshape(-1))
+    softmax_pro = ops.Softmax()(raw_result)
+    predicted_result= ops.Argmax()(softmax_pro)
+    equal_elements = ops.equal(ms.Tensor(y),predicted_result)
+    num_equal_elements = ops.reduce_sum(equal_elements.astype(ms.int32))
+    acc = num_equal_elements.asnumpy()/X.shape[0]
+    return acc
+
     
     
     

@@ -78,7 +78,7 @@ mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transfo
 X_train, X_test, y_train, y_test = PCA_data_preprocessing(mnist_dataset,8)
 
 def  PCA_data_preprocessing_micro(mnist_dataset:datasets.MNIST=mnist_dataset,
-                                  PCA_dim:int=10,ratio:float=0.9):
+                                  PCA_dim:int=8,ratio:float=1.0):
     '''
     将 28*28 的 MNIST 手写数字图像 基于PCA进行压缩
     
@@ -87,8 +87,8 @@ def  PCA_data_preprocessing_micro(mnist_dataset:datasets.MNIST=mnist_dataset,
     filtered_data = filter_3_and_6((mnist_dataset.data, mnist_dataset.targets))
     X_data, y = filtered_data  # X 图像数据 y 标签
     
-    X_data_3, y_data_3 = sample_data(X_data, y, label=3, sample_ratio=ratio)
-    X_data_6, y_data_6 = sample_data(X_data, y, label=6, sample_ratio=ratio)
+    X_data_3, y_data_3 = sample_data(X_data, y, label=3, sample_ratio=1.0)
+    X_data_6, y_data_6 = sample_data(X_data, y, label=6, sample_ratio=1.0)
     #合并抽样后的数据
     X_sampled = torch.cat((X_data_3, X_data_6), dim=0)
     y_sampled = torch.cat((y_data_3, y_data_6), dim=0)
@@ -104,18 +104,15 @@ def  PCA_data_preprocessing_micro(mnist_dataset:datasets.MNIST=mnist_dataset,
     X_pca_max = np.max(X_pca)
     X_pca_scaled = np.pi * (X_pca - X_pca_min) / (X_pca_max - X_pca_min)
     
+    y_sampled[y_sampled==3]=1
+    y_sampled[y_sampled==6]=0
+    y_sampled[y_sampled==3]=1
+    y_sampled[y_sampled==6]=0
+    y_sampled = y_sampled.numpy()
     
-    X_train, X_test, y_train, y_test = train_test_split(X_pca_scaled, y_sampled, test_size=0.2, random_state=0, shuffle=True) # 将数据集划分为训练集和测试集
-    y_train[y_train==3]=1
-    y_train[y_train==6]=0
-    y_test[y_test==3]=1
-    y_test[y_test==6]=0
-    y_train = y_train.numpy()
-    y_test = y_test.numpy()
-    
-    
-    return X_train, X_test, y_train, y_test
+    return X_pca_scaled,y_sampled
 
+X_full,y_full = PCA_data_preprocessing_micro(mnist_dataset,8,0.95)
 
     
 
